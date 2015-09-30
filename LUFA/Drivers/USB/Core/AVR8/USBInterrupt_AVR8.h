@@ -71,15 +71,17 @@
 				USB_INT_EORSTI  = 4,
 				USB_INT_SOFI    = 5,
 				USB_INT_RXSTPI  = 6,
+				USB_INT_RXOUTI  = 7,
+				USB_INT_TXINI   = 8,
 				#endif
 				#if (defined(USB_CAN_BE_HOST) || defined(__DOXYGEN__))
-				USB_INT_HSOFI   = 7,
-				USB_INT_DCONNI  = 8,
-				USB_INT_DDISCI  = 9,
-				USB_INT_RSTI    = 10,
-				USB_INT_BCERRI  = 11,
-				USB_INT_VBERRI  = 12,
-				USB_INT_SRPI    = 13,
+				USB_INT_HSOFI   = 9,
+				USB_INT_DCONNI  = 10,
+				USB_INT_DDISCI  = 11,
+				USB_INT_RSTI    = 12,
+				USB_INT_BCERRI  = 13,
+				USB_INT_VBERRI  = 14,
+				USB_INT_SRPI    = 15,
 				#endif
 			};
 
@@ -114,6 +116,12 @@
 						break;
 					case USB_INT_RXSTPI:
 						UEIENX |= (1 << RXSTPE);
+						break;
+					case USB_INT_RXOUTI:
+						UEIENX |= (1 << RXOUTE);
+						break;
+					case USB_INT_TXINI:
+						UEIENX |= (1 << TXINE);
 						break;
 					#endif
 					#if defined(USB_CAN_BE_HOST)
@@ -175,6 +183,12 @@
 					case USB_INT_RXSTPI:
 						UEIENX &= ~(1 << RXSTPE);
 						break;
+					case USB_INT_RXOUTI:
+						UEIENX &= ~(1 << RXOUTE);
+						break;
+					case USB_INT_TXINI:
+						UEIENX &= ~(1 << TXINE);
+						break;
 					#endif
 					#if defined(USB_CAN_BE_HOST)
 					case USB_INT_HSOFI:
@@ -235,6 +249,12 @@
 					case USB_INT_RXSTPI:
 						UEINTX &= ~(1 << RXSTPI);
 						break;
+					case USB_INT_RXOUTI:
+						UEINTX &= ~(1 << RXOUTE);
+						break;
+					case USB_INT_TXINI:
+						UEIENX &= ~(1 << TXINE);
+						break;
 					#endif
 					#if defined(USB_CAN_BE_HOST)
 					case USB_INT_HSOFI:
@@ -288,6 +308,10 @@
 						return (UDIEN  & (1 << SOFE));
 					case USB_INT_RXSTPI:
 						return (UEIENX & (1 << RXSTPE));
+					case USB_INT_RXOUTI:
+						return (UEIENX & (1 << RXOUTE));
+					case USB_INT_TXINI:
+						return (UEIENX & (1 << TXINE));
 					#endif
 					#if defined(USB_CAN_BE_HOST)
 					case USB_INT_HSOFI:
@@ -334,6 +358,10 @@
 						return (UDINT  & (1 << SOFI));
 					case USB_INT_RXSTPI:
 						return (UEINTX & (1 << RXSTPI));
+					case USB_INT_RXOUTI:
+						return (UEINTX & (1 << RXOUTI));
+					case USB_INT_TXINI:
+						return (UEINTX & (1 << TXINI));
 					#endif
 					#if defined(USB_CAN_BE_HOST)
 					case USB_INT_HSOFI:

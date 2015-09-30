@@ -262,15 +262,20 @@ ISR(USB_COM_vect, ISR_BLOCK)
 {
 	uint8_t PrevSelectedEndpoint = Endpoint_GetCurrentEndpoint();
 
-	Endpoint_SelectEndpoint(ENDPOINT_CONTROLEP);
-	USB_INT_Disable(USB_INT_RXSTPI);
+	if(Endpoint_HasEndpointInterrupted(ENDPOINT_CONTROLEP))
+	{
+		Endpoint_SelectEndpoint(ENDPOINT_CONTROLEP);
+		USB_INT_Disable(USB_INT_RXSTPI);
+		GlobalInterruptEnable();
 
-	GlobalInterruptEnable();
+		USB_Device_ProcessControlRequest();
 
-	USB_Device_ProcessControlRequest();
-
-	Endpoint_SelectEndpoint(ENDPOINT_CONTROLEP);
-	USB_INT_Enable(USB_INT_RXSTPI);
+		Endpoint_SelectEndpoint(ENDPOINT_CONTROLEP);
+		GlobalInterruptDisable();
+		USB_INT_Enable(USB_INT_RXSTPI);
+	} else {
+		EVENT_USB_Endpoint_Interrupt();
+	}
 	Endpoint_SelectEndpoint(PrevSelectedEndpoint);
 }
 #endif
