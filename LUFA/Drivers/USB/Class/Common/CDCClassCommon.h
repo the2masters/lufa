@@ -142,11 +142,20 @@
 			CDC_CSCP_ACMSubclass            = 0x02, /**< Descriptor Subclass value indicating that the device or interface
 			                                         *   belongs to the Abstract Control Model CDC subclass.
 			                                         */
-			CDC_CSCP_ATCommandProtocol      = 0x01, /**< Descriptor Protocol value indicating that the device or interface
-			                                         *   belongs to the AT Command protocol of the CDC class.
+			CDC_CSCP_ECMSubclass            = 0x06, /**< Descriptor Subclass value indicating that the device or interface
+			                                         *   belongs to the Ethernet Networking Control Model CDC subclass.
+			                                         */
+			CDC_CSCP_EEMSubclass            = 0x0C, /**< Descriptor Subclass value indicating that the device or interface
+			                                         *   belongs to the Ethernet Emulation Model CDC subclass.
 			                                         */
 			CDC_CSCP_NoSpecificProtocol     = 0x00, /**< Descriptor Protocol value indicating that the device or interface
 			                                         *   belongs to no specific protocol of the CDC class.
+			                                         */
+			CDC_CSCP_ATCommandProtocol      = 0x01, /**< Descriptor Protocol value indicating that the device or interface
+			                                         *   belongs to the AT Command protocol of the CDC class.
+			                                         */
+			CDC_CSCP_EEMProtocol            = 0x07, /**< Descriptor Protocol value indicating that the device or interface
+			                                         *   belongs to the Ethernet Emulation protocol of the CDC class.
 			                                         */
 			CDC_CSCP_VendorSpecificProtocol = 0xFF, /**< Descriptor Protocol value indicating that the device or interface
 			                                         *   belongs to a vendor-specific protocol of the CDC class.
@@ -165,22 +174,30 @@
 		/** Enum for the CDC class specific control requests that can be issued by the USB bus host. */
 		enum CDC_ClassRequests_t
 		{
-			CDC_REQ_SendEncapsulatedCommand = 0x00, /**< CDC class-specific request to send an encapsulated command to the device. */
-			CDC_REQ_GetEncapsulatedResponse = 0x01, /**< CDC class-specific request to retrieve an encapsulated command response from the device. */
-			CDC_REQ_SetLineEncoding         = 0x20, /**< CDC class-specific request to set the current virtual serial port configuration settings. */
-			CDC_REQ_GetLineEncoding         = 0x21, /**< CDC class-specific request to get the current virtual serial port configuration settings. */
-			CDC_REQ_SetControlLineState     = 0x22, /**< CDC class-specific request to set the current virtual serial port handshake line states. */
-			CDC_REQ_SendBreak               = 0x23, /**< CDC class-specific request to send a break to the receiver via the carrier channel. */
+			CDC_REQ_SendEncapsulatedCommand                 = 0x00, /**< CDC class-specific request to send an encapsulated command to the device. */
+			CDC_REQ_GetEncapsulatedResponse                 = 0x01, /**< CDC class-specific request to retrieve an encapsulated command response from the device. */
+			CDC_REQ_SetLineEncoding                         = 0x20, /**< CDC class-specific request to set the current virtual serial port configuration settings. */
+			CDC_REQ_GetLineEncoding                         = 0x21, /**< CDC class-specific request to get the current virtual serial port configuration settings. */
+			CDC_REQ_SetControlLineState                     = 0x22, /**< CDC class-specific request to set the current virtual serial port handshake line states. */
+			CDC_REQ_SendBreak                               = 0x23, /**< CDC class-specific request to send a break to the receiver via the carrier channel. */
+			CDC_REQ_SetEthernetMulticastFilters             = 0x40, /**< CDC class-specific request to set list of multicast filters. */
+			CDC_REQ_SetEthernetPowerManagementPatternFilter = 0x41, /**< CDC class-specific request to set a specific pattern filter used to trigger USB Remote Wakeup. */
+			CDC_REQ_GetEthernetPowerManagementPatternFilter = 0x42, /**< CDC class-specific request to get the state of a specific pattern filter. */
+			CDC_REQ_SetEthernetPacketFilter                 = 0x43, /**< CDC class-specific request to set a mask of packet types which should be filtered. */
+			CDC_REQ_GetEthernetStatistic                    = 0x44, /**< CDC class-specific request to get a specific ethernet statistic. */
 		};
 
 		/** Enum for the CDC class specific notification requests that can be issued by a CDC device to a host. */
 		enum CDC_ClassNotifications_t
 		{
-			CDC_NOTIF_SerialState = 0x20, /**< Notification type constant for a change in the virtual serial port
-			                               *   handshake line states, for use with a \ref USB_Request_Header_t
-			                               *   notification structure when sent to the host via the CDC notification
-			                               *   endpoint.
-			                               */
+			CDC_NOTIF_NetworkConnection     = 0x00, /**< CDC class-specific notification whether the physical layer link is up. */
+			CDC_NOTIF_ResponseAvailable     = 0x01, /**< CDC class-specific notification to inform that a respone is available */
+			CDC_NOTIF_SerialState           = 0x20, /**< Notification type constant for a change in the virtual serial port
+			                                         *   handshake line states, for use with a \ref USB_Request_Header_t
+			                                         *   notification structure when sent to the host via the CDC notification
+			                                         *   endpoint.
+			                                         */
+			CDC_NOTIF_ConnectionSpeedChange = 0x2A, /**< CDC class-specific notification about a speed change of the physical layer */
 		};
 
 		/** Enum for the CDC class specific interface descriptor subtypes. */
@@ -360,6 +377,54 @@
 			uint8_t bMasterInterface; /**< Interface number of the CDC Control interface. */
 			uint8_t bSlaveInterface0; /**< Interface number of the CDC Data interface. */
 		} ATTR_PACKED USB_CDC_StdDescriptor_FunctionalUnion_t;
+
+		/** \brief CDC class-specific Ethernet Networking Functional Descriptor (LUFA naming conventions).
+		 *
+		 *  Type define for a CDC class-specific Ethernet Networking functional descriptor. It describes the operational
+		 *  modes supported by the Communications Class interface. See the CDC class specification for more details.
+		 *
+		 *  \see \ref USB_CDC_StdDescriptor_FunctionalEthernet_t for the version of this type with standard element names.
+		 *
+		 *  \note Regardless of CPU architecture, these values should be stored as little endian.
+		 */
+		typedef struct
+		{
+			USB_Descriptor_Header_t Header; /**< Regular descriptor header containing the descriptor's type and length. */
+			uint8_t                 Subtype; /**< Sub type value used to distinguish between CDC class-specific descriptors,
+			                                  *   must be \ref CDC_DSUBTYPE_CSInterface_Ethernet.
+			                                  */
+			uint8_t                 indexMAC; /** String Index of MAC Address of Host Interface */
+			uint32_t                EthernetStatistics; /** Bitfield of supported statistics (can be 0) */
+			uint16_t                MaxSegmentSize; /** Interface MTU */
+			uint16_t                NumberMulticastFilters; /** How many Multicast Filters are supported (can be 0) */
+			uint8_t                 NumberPowerFilters; /** How many Filters are supported for USB Remote Wakeup */
+		} ATTR_PACKED USB_CDC_Descriptor_FunctionalEthernet_t;
+
+		/** \brief CDC class-specific Ethernet Networking Functional Descriptor (USB-IF naming conventions).
+		 *
+		 *  Type define for a CDC class-specific Ethernet Networking functional descriptor. It describes the operational
+		 *  modes supported by the Communications Class interface. See the CDC class specification for more details.
+		 *
+		 *  \see \ref USB_CDC_Descriptor_FunctionalEthernet_t for the version of this type with non-standard LUFA specific
+		 *       element names.
+		 *
+		 *  \note Regardless of CPU architecture, these values should be stored as little endian.
+		 */
+		typedef struct
+		{
+			uint8_t  bFunctionLength; /**< Size of the descriptor, in bytes. */
+			uint8_t  bDescriptorType; /**< Type of the descriptor, either a value in \ref USB_DescriptorTypes_t or a value
+			                          *   given by the specific class.
+			                          */
+			uint8_t  bDescriptorSubType; /**< Sub type value used to distinguish between CDC class-specific descriptors,
+			                             *   must be \ref CDC_DSUBTYPE_CSInterface_Ethernet.
+			                             */
+			uint8_t  iMACAddress; /** String Index of MAC Address of Host Interface */
+			uint32_t bmEthernetStatistics; /** Bitfield of supported statistics (can be 0) */
+			uint16_t wMaxSegmentSize; /** Interface MTU */
+			uint16_t wNumberMCFilters; /** How many Multicast Filters are supported (can be 0) */
+			uint8_t  bNumberPowerFilters; /** How many Filters are supported for USB Remote Wakeup */
+		} ATTR_PACKED USB_CDC_StdDescriptor_FunctionalEthernet_t;
 
 		/** \brief CDC Virtual Serial Port Line Encoding Settings Structure.
 		 *
