@@ -325,6 +325,22 @@
 			 *        \ref Group_USBManagement documentation).
 			 */
 			void EVENT_USB_Device_StartOfFrame(void);
+
+			/** Event for USB Endpoint Interrupts, when enabled.
+			 *
+			 *  If in device mode (only), endpoints can be managed via interrupts entirely. This requires
+			 *  deep knowledge of the LUFA internals and can only be used if the INTERRUPT_CONTROL_ENDPOINT
+			 *  token is defined. The requested endpoint interrupts should be enabled by calling
+			 *  \ref USB_INT_Enable() on current endpoint with parameter USB_INT_TXINI for IN endpoints
+			 *  or USB_INT_RXOUTI for OUT endpoints. This event fires for each endpoint with enabled interrupts.
+			 *  The control endpoint is serviced entirely by the library, see \ref USB_USBTask().
+			 *
+			 *  Use \ref Endpoint_GetEndpointInterrupts() to get a bitfield of all endpoints which should be serviced.
+			 *  Use \ref Endpoint_HasEndpointInterrupted() to check if a specific endpoint should be serviced.
+			 *  This event is time-critical; as long as this event is running no control endpoint interrupts are
+			 *  serviced.
+			 */
+			void EVENT_USB_Endpoint_Interrupt(void);
 		#endif
 
 	/* Private Interface - For use in library only: */
@@ -357,6 +373,7 @@
 					void EVENT_USB_Device_WakeUp(void) ATTR_WEAK ATTR_ALIAS(USB_Event_Stub);
 					void EVENT_USB_Device_Reset(void) ATTR_WEAK ATTR_ALIAS(USB_Event_Stub);
 					void EVENT_USB_Device_StartOfFrame(void) ATTR_WEAK ATTR_ALIAS(USB_Event_Stub);
+					void EVENT_USB_Endpoint_Interrupt(void) ATTR_WEAK ATTR_ALIAS(USB_Event_Stub);
 				#endif
 			#endif
 	#endif
